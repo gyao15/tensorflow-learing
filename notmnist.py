@@ -42,9 +42,9 @@ def _variable_with_weight_decay(name,shape,stddev,wd):
 		tf.add_to_collection('losses',weight_decay)
 	return var
 
-def inputs():
-	images,labels = notmnist_input.read_data(batch_size=FLAGS.batch_size)
-	return images,labels
+def inputs(iseval):
+	num_examples,images,labels = notmnist_input.read_data(batch_size=FLAGS.batch_size,shuffle=True,iseval=iseval)
+	return num_examples,images,labels
 
 def inference(images):
 	with tf.variable_scope('conv1') as scope:
@@ -127,8 +127,8 @@ def _add_loss_summaries(total_loss):
 
 	return loss_averages_op
 
-def train(total_loss,global_step):
-	num_batches_per_epoch = 20000/FLAGS.batch_size
+def train(total_loss,global_step,num_examples):
+	num_batches_per_epoch = num_examples/FLAGS.batch_size
 	decay_steps = int(num_batches_per_epoch*NUM_EPOCHS_PER_DECAY)
 
 	lr = tf.train.exponential_decay(INITIAL_LEARNING_RATE,

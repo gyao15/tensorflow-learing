@@ -13,7 +13,7 @@ tf.app.flags.DEFINE_string('train_dir','D:/python/learntensor/notmnist_train',
 	"""Directory where to write event logs and checkpoint.""")
 tf.app.flags.DEFINE_integer('max_steps',50000,
 	"""Number of batches to run""")
-tf.app.flags.DEFINE_integer('log_frequency', 50,
+tf.app.flags.DEFINE_integer('log_frequency', 100,
                             """How often to log results to the console.""")
 
 
@@ -22,7 +22,7 @@ def train():
 		global_step = tf.train.get_or_create_global_step()
 
 		with tf.device('/cpu:0'):
-			images,labels = notmnist.inputs()
+			num_examples,images,labels = notmnist.inputs(False)
 
 		logits = notmnist.inference(images)
 		print(logits.get_shape())
@@ -30,9 +30,7 @@ def train():
 		loss = notmnist.loss(logits,labels)
 		accur = notmnist.accuracy(logits,labels)
 
-		train_op = notmnist.train(loss,global_step)
-		
-		n = False
+		train_op = notmnist.train(loss,global_step,num_examples)
 
 		class _LoggerHook(tf.train.SessionRunHook):
 			def begin(self):

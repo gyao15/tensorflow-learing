@@ -7,23 +7,28 @@ import tensorflow as tf
 from six.moves import cPickle as pickle
 from six.moves import range
 
-def read_data(batch_size,shuffle=True):
+def read_data(batch_size,shuffle,iseval):
 	pickle_file = 'D:/python/learntensor/notMNIST_data/notMNIST.pickle'
 	with open(pickle_file,'rb') as f:
 		save = pickle.load(f)
-		train_dataset = save['train_dataset']
-		train_labels = save['train_labels']
+		if iseval:
+			dataset = save['test_dataset']
+			labels = save['test_labels']
+		else:
+			dataset = save['train_dataset']
+			labels = save['train_labels']
 		del save
-	image = train_dataset.reshape(-1,28*28)
-	labels = (np.arange(8)==train_labels[:,None]).astype(np.int32)
+	image = dataset.reshape(-1,28*28)
+	labels = (np.arange(8)==labels[:,None]).astype(np.int32)
 	_,labels = np.nonzero(labels)
 	images = tf.train.input_producer(image,shuffle=None)
 	label = tf.train.input_producer(labels,shuffle=None)
+	num_examples = np.shape(image)[0]
 	image = images.dequeue()
 	labels = label.dequeue()
 	
 
-	min_queue_examples = int(0.2*20000)
+	min_queue_examples = int(0.2*num_examples)
 
 	num_preprocess_threads = 16
 	if shuffle:
@@ -43,6 +48,6 @@ def read_data(batch_size,shuffle=True):
 
 	tf.summary.image('images',images)
 	
-	print(images.get_shape(),label_batch.get_shape())
+	print(num_examples)
 
-	return images,label_batch
+	return num_examples,images,label_batch
